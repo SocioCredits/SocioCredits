@@ -240,7 +240,121 @@
 
     alert("✅ Formulario validado correctamente. En la Fase 4 estructuraremos el mensaje completo con todos estos datos para enviarlo a WhatsApp.");
   }
-</script>
+<script>
+  // NUMERO DE TELEFONO DE OPERACIÓN (Configura tu número aquí)
+  var NUMERO_WHATSAPP = "3102523127"; // 👈 REEMPLAZA ESTE NÚMERO POR EL TUYO CON EL PREFIJO 57
 
-</body>
-      </html>
+  var CARGO_BASE_MICRO = 3000;
+
+  var montoRange = document.getElementById('montoRange');
+  var montoTexto = document.getElementById('montoTexto');
+  var frecuenciaSelect = document.getElementById('frecuencia');
+  var plazoSelect = document.getElementById('plazo');
+  var porcentajeTextoEl = document.getElementById('porcentajeTexto');
+  var costoAdicionalEl = document.getElementById('costoAdicional');
+  var totalPagarEl = document.getElementById('totalPagar');
+  var valorCuotaEl = document.getElementById('valorCuota');
+  var rowCuota = document.getElementById('rowCuota');
+
+  function formatoCOP(valor) {
+    return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(valor);
+  }
+
+  function actualizarPlazos() {
+    var frecuencia = frecuenciaSelect.value;
+    plazoSelect.innerHTML = '';
+
+    if (frecuencia === 'semanal') {
+      for (var i = 1; i <= 8; i++) {
+        var opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = i + (i === 1 ? ' Semana' : ' Semanas');
+        plazoSelect.appendChild(opt);
+      }
+      rowCuota.style.display = 'flex';
+    } else {
+      var opt1 = document.createElement('option'); opt1.value = 1; opt1.textContent = '1 Mes (30 días)';
+      var opt2 = document.createElement('option'); opt2.value = 2; opt2.textContent = '2 Meses (60 días)';
+      plazoSelect.appendChild(opt1);
+      plazoSelect.appendChild(opt2);
+      rowCuota.style.display = 'none';
+    }
+    calcularSimulacion();
+  }
+
+  function calcularSimulacion() {
+    var monto = parseInt(montoRange.value);
+    var frecuencia = frecuenciaSelect.value;
+    var numPlazo = parseInt(plazoSelect.value) || 1;
+
+    montoTexto.textContent = formatoCOP(monto);
+
+    var esMayorAUnMes = (frecuencia === 'semanal' && numPlazo > 4) || (frecuencia === 'unico' && numPlazo === 2);
+    var porcentajeAplicado = esMayorAUnMes ? 0.55 : 0.40;
+
+    porcentajeTextoEl.textContent = (porcentajeAplicado * 100) + "%";
+
+    var costoVariable = monto * porcentajeAplicado;
+    var cargoBase = (monto <= 50000) ? CARGO_BASE_MICRO : 0;
+    var costoTotalAdicional = costoVariable + cargoBase;
+    
+    var totalPagar = monto + costoTotalAdicional;
+
+    costoAdicionalEl.textContent = formatoCOP(costoTotalAdicional);
+    totalPagarEl.textContent = formatoCOP(totalPagar);
+
+    if (frecuencia === 'semanal') {
+      var cuota = Math.ceil(totalPagar / numPlazo);
+      valorCuotaEl.textContent = formatoCOP(cuota);
+    }
+  }
+
+  montoRange.addEventListener('input', calcularSimulacion);
+  frecuenciaSelect.addEventListener('change', actualizarPlazos);
+  plazoSelect.addEventListener('change', calcularSimulacion);
+
+  actualizarPlazos();
+
+  // PROCESAMIENTO Y ENVÍO A WHATSAPP
+  function procesarSolicitud() {
+    var nombre = document.getElementById('nombre').value.trim();
+    var cedula = document.getElementById('cedula').value.trim();
+    var celular = document.getElementById('celular').value.trim();
+    var barrio = document.getElementById('barrio').value.trim();
+    var ocupacion = document.getElementById('ocupacion').value;
+    var nequi = document.getElementById('nequi').value.trim();
+
+    if (!nombre || !cedula || !celular || !barrio || !nequi) {
+      alert("⚠️ Por favor completa todos los campos del formulario antes de continuar.");
+      return;
+    }
+
+    var monto = formatoCOP(montoRange.value);
+    var modo = frecuenciaSelect.value === 'semanal' ? 'Cuotas Semanales' : 'Pago Único';
+    var plazoTxt = plazoSelect.options[plazoSelect.selectedIndex].text;
+    var tasaTxt = porcentajeTextoEl.textContent;
+    var totalTxt = totalPagarEl.textContent;
+    var cuotaTxt = frecuenciaSelect.value === 'semanal' ? valorCuotaEl.textContent : 'N/A (Pago Único)';
+
+    // ESTRECHAMIENTO Y ESTRUCTURA DEL MENSAJE
+    var mensaje = "🚨 *NUEVA SOLICITUD - SOCIOCREDITS* 🚨\n\n" +
+      "👤 *DATOS DEL CLIENTE:*\n" +
+      "• Nombre: " + nombre + "\n" +
+      "• Cédula: " + cedula + "\n" +
+      "• Celular/WA: " + celular + "\n" +
+      "• Dirección/Barrio (Neiva): " + barrio + "\n" +
+      "• Ocupación: " + ocupacion + "\n" +
+      "• Nequi/Daviplata: " + nequi + "\n\n" +
+      "💰 *DETALLES DEL PRÉSTAMO:*\n" +
+      "• Monto Solicitado: " + monto + "\n" +
+      "• Modalidad: " + modo + "\n" +
+      "• Plazo Elegido: " + plazoTxt + "\n" +
+      "• Tasa Aplicada: " + tasaTxt + "\n" +
+      "• Total a Devolver: " + totalTxt + "\n" +
+      "• Valor por Cuota: " + cuotaTxt + "\n\n" +
+      "📌 *REQUISITOS ADJUNTOS:* Procedo a adjuntar fotos de cédula, selfie y recibo público.";
+
+    var url = "https://wa.me/" + NUMERO_WHATSAPP + "?text=" + encodeURIComponent(mensaje);
+    window.open(url, '_blank');
+  }
+</script>
