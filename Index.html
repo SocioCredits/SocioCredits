@@ -154,95 +154,8 @@
 </div>
 
 <script>
-  var CARGO_BASE_MICRO = 3000;
-
-  var montoRange = document.getElementById('montoRange');
-  var montoTexto = document.getElementById('montoTexto');
-  var frecuenciaSelect = document.getElementById('frecuencia');
-  var plazoSelect = document.getElementById('plazo');
-  var porcentajeTextoEl = document.getElementById('porcentajeTexto');
-  var costoAdicionalEl = document.getElementById('costoAdicional');
-  var totalPagarEl = document.getElementById('totalPagar');
-  var valorCuotaEl = document.getElementById('valorCuota');
-  var rowCuota = document.getElementById('rowCuota');
-
-  function formatoCOP(valor) {
-    return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(valor);
-  }
-
-  function actualizarPlazos() {
-    var frecuencia = frecuenciaSelect.value;
-    plazoSelect.innerHTML = '';
-
-    if (frecuencia === 'semanal') {
-      for (var i = 1; i <= 8; i++) {
-        var opt = document.createElement('option');
-        opt.value = i;
-        opt.textContent = i + (i === 1 ? ' Semana' : ' Semanas');
-        plazoSelect.appendChild(opt);
-      }
-      rowCuota.style.display = 'flex';
-    } else {
-      var opt1 = document.createElement('option'); opt1.value = 1; opt1.textContent = '1 Mes (30 días)';
-      var opt2 = document.createElement('option'); opt2.value = 2; opt2.textContent = '2 Meses (60 días)';
-      plazoSelect.appendChild(opt1);
-      plazoSelect.appendChild(opt2);
-      rowCuota.style.display = 'none';
-    }
-    calcularSimulacion();
-  }
-
-  function calcularSimulacion() {
-    var monto = parseInt(montoRange.value);
-    var frecuencia = frecuenciaSelect.value;
-    var numPlazo = parseInt(plazoSelect.value) || 1;
-
-    montoTexto.textContent = formatoCOP(monto);
-
-    var esMayorAUnMes = (frecuencia === 'semanal' && numPlazo > 4) || (frecuencia === 'unico' && numPlazo === 2);
-    var porcentajeAplicado = esMayorAUnMes ? 0.55 : 0.40;
-
-    porcentajeTextoEl.textContent = (porcentajeAplicado * 100) + "%";
-
-    var costoVariable = monto * porcentajeAplicado;
-    var cargoBase = (monto <= 50000) ? CARGO_BASE_MICRO : 0;
-    var costoTotalAdicional = costoVariable + cargoBase;
-    
-    var totalPagar = monto + costoTotalAdicional;
-
-    costoAdicionalEl.textContent = formatoCOP(costoTotalAdicional);
-    totalPagarEl.textContent = formatoCOP(totalPagar);
-
-    if (frecuencia === 'semanal') {
-      var cuota = Math.ceil(totalPagar / numPlazo);
-      valorCuotaEl.textContent = formatoCOP(cuota);
-    }
-  }
-
-  montoRange.addEventListener('input', calcularSimulacion);
-  frecuenciaSelect.addEventListener('change', actualizarPlazos);
-  plazoSelect.addEventListener('change', calcularSimulacion);
-
-  actualizarPlazos();
-
-  function procesarSolicitud() {
-    // Validar campos obligatorios
-    var nombre = document.getElementById('nombre').value.trim();
-    var cedula = document.getElementById('cedula').value.trim();
-    var celular = document.getElementById('celular').value.trim();
-    var barrio = document.getElementById('barrio').value.trim();
-    var nequi = document.getElementById('nequi').value.trim();
-
-    if (!nombre || !cedula || !celular || !barrio || !nequi) {
-      alert("⚠️ Por favor completa todos los campos del formulario de verificación antes de continuar.");
-      return;
-    }
-
-    alert("✅ Formulario validado correctamente. En la Fase 4 estructuraremos el mensaje completo con todos estos datos para enviarlo a WhatsApp.");
-  }
-<script>
-  // NUMERO DE TELEFONO DE OPERACIÓN (Configura tu número aquí)
-  var NUMERO_WHATSAPP = "3102523127"; // 👈 REEMPLAZA ESTE NÚMERO POR EL TUYO CON EL PREFIJO 57
+  // ⚠️ CONFIGURA TU NÚMERO DE WHATSAPP AQUÍ (Con prefijo 57 de Colombia, sin espacios ni el signo +)
+  var NUMERO_WHATSAPP = "573000000000"; 
 
   var CARGO_BASE_MICRO = 3000;
 
@@ -336,7 +249,6 @@
     var totalTxt = totalPagarEl.textContent;
     var cuotaTxt = frecuenciaSelect.value === 'semanal' ? valorCuotaEl.textContent : 'N/A (Pago Único)';
 
-    // ESTRECHAMIENTO Y ESTRUCTURA DEL MENSAJE
     var mensaje = "🚨 *NUEVA SOLICITUD - SOCIOCREDITS* 🚨\n\n" +
       "👤 *DATOS DEL CLIENTE:*\n" +
       "• Nombre: " + nombre + "\n" +
@@ -358,3 +270,6 @@
     window.open(url, '_blank');
   }
 </script>
+
+</body>
+      </html>
